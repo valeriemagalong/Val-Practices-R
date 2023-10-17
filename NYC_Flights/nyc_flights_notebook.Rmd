@@ -1,0 +1,123 @@
+---
+title: "Data Manipulation of 2013 NYC Flights Dataset"
+output: html_notebook
+---
+
+In this notebook, I practice manipulating data using the `dplyr` and `nycflights13` packages, using guidance from [R for Data Science](http://rmarkdown.rstudio.com) by Hadley Wickham.  Data comes from the U.S. Bureau of Transportation Statistics, representing 336,776 flights that departed from New York City in 2013.
+
+---
+
+#### Attach packages
+```{r}
+library(dplyr)
+library(nycflights13)
+library(ggplot2)
+```
+
+---
+
+#### Understanding the dataset
+```{r}
+# Get a glimpse of flights
+glimpse(flights)
+```
+
+```{r}
+# Check for duplicates in the flights dataframe
+sum(duplicated(flights))
+```
+
+```{r}
+# Check for NA values in the flights dataframe
+sum(is.na(flights))
+```
+
+```{r}
+# Get the row numbers with NA values, assign to variable na_rows
+na_rows <- which(is.na(flights))
+
+glimpse(na_rows)
+```
+
+```{r}
+# Check one of the rows to get a sense of where the NAs are...
+flights[1011167,]
+```
+
+I'll take no action for now in terms of the NA values, but I'll keep in mind that there are 46,595 rows with NA values out of the 336,776 rows in the flights dataset.
+
+---
+
+#### Exploring the data
+```{r}
+# Get all unique destinations
+unique(flights$dest)
+```
+
+```{r}
+# I'm only interested in flights whose destination is Chicago O'Hare (ORD).
+ord_bound <- flights |>
+  filter(dest == "ORD")
+
+glimpse(ord_bound)
+```
+
+```{r}
+# Get all unique NYC origin airports
+unique(ord_bound$origin)
+```
+
+```{r}
+# What is the average departure delay (in minutes) by origin airport for ORD-bound flights?
+ord_bound |>
+  group_by(origin) |>
+  summarize(avg_delay = mean(dep_delay))
+```
+```{r}
+# NA values tell me that there is missing data in the dep_delay column.  Count the number of NAs for each origin airport.
+ord_bound |>
+  group_by(origin) |>
+  summarize(total_na = sum(is.na(dep_delay)))
+```
+```{r}
+# Sanity check the above numbers with the total NA count in the dep_delay column
+sum(is.na(ord_bound$dep_delay))
+```
+
+```{r}
+# Now that we're aware of the NAs, calculate the mean & median departure delay at each NYC airport for all ORD-bound flights, ignoring the missing values.  Include a column for the sample size, n.
+
+# NOTE: Negative values in the dep_delay column (i.e. minutes) means an early departure time.
+ord_bound |>
+  group_by(origin) |>
+  summarize(avg_delay = mean(dep_delay, na.rm = TRUE),
+            med_delay = median(dep_delay, na.rm = TRUE),
+            n = n())
+```
+It looks like ORD-bound flights leaving from LGA depart 3 minutes early (median)
+
+---
+
+#### Visualizing NYC-ORD flight delays
+
+```{r}
+ord_bound |>
+  ggplot(aes(x = dep_delay, color = origin)) +
+    geom_histogram(aes(fill = origin), binwidth = 10,
+                   color = "black", na.rm = TRUE) +
+    coord_cartesian(xlim = c(-25, 150)) +
+    facet_grid(origin~., scales = "free") +
+    labs(
+      title = "ORD-Bound Flight Delays by NYC Airport",
+      caption = "A negative Time to Departure represents an early departure.",
+      color = "Origin Airport"
+    ) +
+    xlab("Time to Departure (minutes)") +
+    ylab("Frequency") +
+    theme(legend.position = "none")
+```
+
+### If you were looking for flights to Chicago departing from NYC in 2013, your best bet was booking a flight out of LGA.
+
+---
+
