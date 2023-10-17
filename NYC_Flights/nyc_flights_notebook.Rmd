@@ -3,7 +3,7 @@ title: "Data Manipulation of 2013 NYC Flights Dataset"
 output: html_notebook
 ---
 
-In this notebook, I practice manipulating data using the `dplyr` and `nycflights13` packages, using guidance from [R for Data Science](http://rmarkdown.rstudio.com) by Hadley Wickham.  Data comes from the U.S. Bureau of Transportation Statistics, representing 336,776 flights that departed from New York City in 2013.
+In this notebook, I practice manipulating data using the `dplyr` and `nycflights13` packages, using guidance from [R for Data Science](https://r4ds.hadley.nz/data-transform) by Hadley Wickham.  Data comes from the U.S. Bureau of Transportation Statistics, representing 336,776 flights that departed from New York City in 2013.
 
 ---
 
@@ -120,4 +120,3 @@ ord_bound |>
 ### If you were looking for flights to Chicago departing from NYC in 2013, your best bet was booking a flight out of LGA.
 
 ---
-
